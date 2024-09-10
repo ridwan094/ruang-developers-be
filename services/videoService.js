@@ -92,8 +92,24 @@ exports.getVideoDetails = async (videoId) => {
         throw new Error('Video not found');
     }
 
-    // Increment the views
-    await videoRepository.incrementViews(video.detail.id);
+    if (video.detail.status === 'published') {
+        await videoRepository.incrementViews(videoId);
+
+        const updatedVideo = await videoRepository.getVideoById(videoId);
+
+        return {
+            id: updatedVideo.id,
+            name: updatedVideo.name,
+            description: updatedVideo.detail.description,
+            url_minio_video: updatedVideo.detail.url_minio_video,
+            url_minio_thumbnail: updatedVideo.detail.url_minio_thumbnail,
+            name_publisher: updatedVideo.detail.name_publisher,
+            views: updatedVideo.detail.views,
+            status: updatedVideo.detail.status,
+            createdAt: updatedVideo.createdAt,
+            updatedAt: updatedVideo.updatedAt
+        };
+    }
 
     return {
         id: video.id,
@@ -102,13 +118,12 @@ exports.getVideoDetails = async (videoId) => {
         url_minio_video: video.detail.url_minio_video,
         url_minio_thumbnail: video.detail.url_minio_thumbnail,
         name_publisher: video.detail.name_publisher,
-        views: video.detail.views + 1,
+        views: video.detail.views,
         status: video.detail.status,
         createdAt: video.createdAt,
         updatedAt: video.updatedAt
     };
 };
-
 
 exports.updateVideo = async (id, videoData, file, thumbnail) => {
     try {
@@ -120,6 +135,17 @@ exports.updateVideo = async (id, videoData, file, thumbnail) => {
 
         const bucketName = 'master-data-videos';
         const status = videoData.status || 'inactive';
+
+        // Menghapus file video dan thumbnail yang lama di MinIO jika ada
+        if (file && video.detail.url_minio_video) {
+            const oldVideoName = video.detail.url_minio_video.split('/').pop();
+            await minioClient.removeObject(bucketName, oldVideoName);
+        }
+
+        if (thumbnail && video.detail.url_minio_thumbnail) {
+            const oldThumbnailName = video.detail.url_minio_thumbnail.split('/').pop();
+            await minioClient.removeObject(bucketName, oldThumbnailName);
+        }
 
         let videoUrl = video.detail.url_minio_video;
         let thumbnailUrl = video.detail.url_minio_thumbnail;
@@ -173,22 +199,24 @@ exports.deleteVideo = async (videoId) => {
 
         if (video.detail.url_minio_video) {
             const videoName = video.detail.url_minio_video.split('/').pop();
-            await minioClient.removeObject(bucketName, videoName, function (err) {
-                if (err) {
-                    console.log('Error occurred while deleting the video from Minio:', err);
-                    throw new Error('Error deleting video from storage');
-                }
-            });
+            try {
+                await minioClient.removeObject(bucketName, videoName);
+                console.log(`Video ${videoName} deleted successfully from Minio`);
+            } catch (err) {
+                console.error(`Error occurred while deleting the video from Minio: ${err.message}`);
+                throw new Error('Error deleting video from storage');
+            }
         }
 
         if (video.detail.url_minio_thumbnail) {
             const thumbnailName = video.detail.url_minio_thumbnail.split('/').pop();
-            await minioClient.removeObject(bucketName, thumbnailName, function (err) {
-                if (err) {
-                    console.log('Error occurred while deleting the thumbnail from Minio:', err);
-                    throw new Error('Error deleting thumbnail from storage');
-                }
-            });
+            try {
+                await minioClient.removeObject(bucketName, thumbnailName);
+                console.log(`Thumbnail ${thumbnailName} deleted successfully from Minio`);
+            } catch (err) {
+                console.error(`Error occurred while deleting the thumbnail from Minio: ${err.message}`);
+                throw new Error('Error deleting thumbnail from storage');
+            }
         }
 
         await videoRepository.deleteVideo(videoId);

@@ -55,10 +55,15 @@ exports.updateVideo = async (id, videoData, videoUrl, thumbnailUrl) => {
 };
 
 exports.deleteVideo = async (id) => {
-    const video = await DetailVideo.findOne({ where: { masterDataVideoId: id } });
-    if (!video) throw new Error('Video not found');
+    const videoDetail = await DetailVideo.findOne({ where: { masterDataVideoId: id } });
+    if (!videoDetail) throw new Error('Video detail not found');
 
-    await video.destroy();
+    await videoDetail.destroy();
+    
+    const masterVideo = await MasterDataVideo.findOne({ where: { id } });
+    if (!masterVideo) throw new Error('Master video not found');
+    
+    await masterVideo.destroy();
 };
 
 exports.incrementViews = async (videoId) => {

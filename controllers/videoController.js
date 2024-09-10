@@ -43,11 +43,26 @@ exports.getVideoDetails = async (req, res) => {
     }
 };
 
+exports.updateVideo = async (req, res) => {
+    try {
+        const videoId = req.params.id;
+        const { name, description, name_publisher, status } = req.body;
+        const file = req.files?.file ? req.files.file[0] : null;
+        const thumbnail = req.files?.thumbnail ? req.files.thumbnail[0] : null;
+
+        const updatedVideo = await videoService.updateVideo(videoId, { name, description, name_publisher, status }, file, thumbnail);
+        return res.status(200).json(updatedVideo);
+    } catch (err) {
+        return res.status(500).json({ error: err.message });
+    }
+};
+
 exports.deleteVideo = async (req, res) => {
     try {
-        await videoService.deleteVideo(req.params.id);
-        res.status(204).json({ message: 'Video deleted successfully' });
+        const videoId = req.params.id;
+        const result = await videoService.deleteVideo(videoId);
+        return res.status(200).json(result);
     } catch (err) {
-        res.status(400).json({ error: err.message });
+        return res.status(500).json({ error: err.message });
     }
 };

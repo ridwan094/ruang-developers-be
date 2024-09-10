@@ -27,9 +27,9 @@ module.exports = (sequelize, DataTypes) => {
       defaultValue: 0
     },
     status: {
-      type: DataTypes.ENUM('published', 'not_published', 'deleted'),
+      type: DataTypes.ENUM('published', 'inactived', 'deleted'),
       allowNull: false,
-      defaultValue: 'not_published'
+      defaultValue: 'inactived'
     }
   }, {
     tableName: 'detail_videos',

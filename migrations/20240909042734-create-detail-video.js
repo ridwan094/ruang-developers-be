@@ -29,9 +29,9 @@ module.exports = {
         defaultValue: 0
       },
       status: {
-        type: Sequelize.ENUM('published', 'not_published', 'deleted'),
+        type: Sequelize.ENUM('published', 'inactive', 'deleted'),
         allowNull: false,
-        defaultValue: 'not_published'
+        defaultValue: 'inactive'
       },
       masterDataVideoId: {
         type: Sequelize.INTEGER,

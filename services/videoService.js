@@ -187,6 +187,40 @@ exports.updateVideo = async (id, videoData, file, thumbnail) => {
     }
 };
 
+exports.getVideosWithPagination = async (offset, limit, sortBy, sortDirection) => {
+    try {
+        const videos = await videoRepository.fetchVideos(offset, limit, sortBy, sortDirection);
+        const totalVideos = await videoRepository.countAllVideos();
+
+        const totalPages = Math.ceil(totalVideos / limit);
+
+        return {
+            data: videos.rows.map(video => ({
+                id: video.id,
+                name: video.name,
+                name_publisher: video.detail ? video.detail.name_publisher : null,
+                url_minio_video: video.detail ? video.detail.url_minio_video : null,
+                url_minio_thumbnail: video.detail ? video.detail.url_minio_thumbnail : null,
+                description: video.detail ? video.detail.description : null,
+                views: video.detail ? video.detail.views : 0,
+                status: video.detail ? video.detail.status : 'unknown',
+                createdAt: video.createdAt,
+                updatedAt: video.updatedAt
+            })),
+            metadata: {
+                pageInfo: {
+                    currentPage: Math.ceil(offset / limit) + 1,
+                    totalDataServer: totalVideos,
+                    totalPageServer: totalPages
+                }
+            }
+        };
+    } catch (error) {
+        console.error('Error fetching videos with pagination:', error);
+        throw error;
+    }
+};
+
 exports.deleteVideo = async (videoId) => {
     try {
         const video = await videoRepository.getVideoById(videoId);

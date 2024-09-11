@@ -57,6 +57,20 @@ exports.updateVideo = async (req, res) => {
     }
 };
 
+exports.fetchVideos = async (req, res) => {
+    try {
+        const { pageStart = 1, sortBy = 'createdAt', sortDirection = 'desc' } = req.body;
+        const limit = 2;
+        const offset = (pageStart - 1) * limit;
+
+        const result = await videoService.getVideosWithPagination(offset, limit, sortBy, sortDirection);
+
+        return res.status(200).json(result);
+    } catch (err) {
+        return res.status(500).json({ error: err.message });
+    }
+};
+
 exports.deleteVideo = async (req, res) => {
     try {
         const videoId = req.params.id;

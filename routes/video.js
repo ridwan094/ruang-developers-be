@@ -9,6 +9,7 @@ router.post('/videos', upload.fields([{ name: 'file', maxCount: 1 }, { name: 'th
 router.get('/videos', videoController.getAllVideos);
 router.get('/videos/:id', videoController.getVideoDetails);
 router.put('/videos/:id', upload.fields([{ name: 'file', maxCount: 1 }, { name: 'thumbnail', maxCount: 1 }]), videoController.updateVideo);
+router.post('/videos/fetch', videoController.fetchVideos);
 router.delete('/videos/:id', videoController.deleteVideo);
 
 module.exports = router;

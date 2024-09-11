@@ -30,14 +30,34 @@ exports.getAllVideos = async (offset, limit) => {
     });
 };
 
+exports.fetchVideos = async (offset, limit, sortBy, sortDirection) => {
+    return await MasterDataVideo.findAndCountAll({
+        offset: offset,
+        limit: limit,
+        order: [[sortBy, sortDirection]],
+        include: [
+            {
+                model: DetailVideo,
+                as: 'detail',
+                attributes: ['name_publisher', 'url_minio_video', 'url_minio_thumbnail', 'description', 'views', 'status'],
+                required: false
+            }
+        ]
+    });
+};
+
+exports.countAllVideos = async () => {
+    return await MasterDataVideo.count();
+};
+
 exports.getTotalVideos = async () => {
     return await MasterDataVideo.count();
 };
 
 exports.getVideoById = async (videoId) => {
-    return await MasterDataVideo.findOne({ 
-        where: { id: videoId }, 
-        include: 'detail' 
+    return await MasterDataVideo.findOne({
+        where: { id: videoId },
+        include: 'detail'
     });
 };
 
@@ -54,15 +74,16 @@ exports.updateVideo = async (id, videoData, videoUrl, thumbnailUrl) => {
     return video;
 };
 
+
 exports.deleteVideo = async (id) => {
     const videoDetail = await DetailVideo.findOne({ where: { masterDataVideoId: id } });
     if (!videoDetail) throw new Error('Video detail not found');
 
     await videoDetail.destroy();
-    
+
     const masterVideo = await MasterDataVideo.findOne({ where: { id } });
     if (!masterVideo) throw new Error('Master video not found');
-    
+
     await masterVideo.destroy();
 };
 

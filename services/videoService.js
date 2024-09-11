@@ -86,7 +86,7 @@ exports.getAllVideos = async (page, limit) => {
 };
 
 exports.getVideoDetails = async (videoId) => {
-    const video = await videoRepository.getVideoById(videoId);
+    let video = await videoRepository.getVideoById(videoId);
 
     if (!video) {
         throw new Error('Video not found');
@@ -95,25 +95,12 @@ exports.getVideoDetails = async (videoId) => {
     if (video.detail.status === 'published') {
         await videoRepository.incrementViews(videoId);
 
-        const updatedVideo = await videoRepository.getVideoById(videoId);
-
-        return {
-            id: updatedVideo.id,
-            name: updatedVideo.name,
-            description: updatedVideo.detail.description,
-            url_minio_video: updatedVideo.detail.url_minio_video,
-            url_minio_thumbnail: updatedVideo.detail.url_minio_thumbnail,
-            name_publisher: updatedVideo.detail.name_publisher,
-            views: updatedVideo.detail.views,
-            status: updatedVideo.detail.status,
-            createdAt: updatedVideo.createdAt,
-            updatedAt: updatedVideo.updatedAt
-        };
+        video = await videoRepository.getVideoById(videoId);
     }
 
     return {
         id: video.id,
-        name: video.name,
+        name: video.name, 
         description: video.detail.description,
         url_minio_video: video.detail.url_minio_video,
         url_minio_thumbnail: video.detail.url_minio_thumbnail,
@@ -127,59 +114,50 @@ exports.getVideoDetails = async (videoId) => {
 
 exports.updateVideo = async (id, videoData, file, thumbnail) => {
     try {
+        const bucketName = 'master-data-videos';
         const video = await videoRepository.getVideoById(id);
 
         if (!video) {
-            throw new Error('Video not found');
-        }
-
-        const bucketName = 'master-data-videos';
-        const status = videoData.status || 'inactive';
-
-        // Menghapus file video dan thumbnail yang lama di MinIO jika ada
-        if (file && video.detail.url_minio_video) {
-            const oldVideoName = video.detail.url_minio_video.split('/').pop();
-            await minioClient.removeObject(bucketName, oldVideoName);
-        }
-
-        if (thumbnail && video.detail.url_minio_thumbnail) {
-            const oldThumbnailName = video.detail.url_minio_thumbnail.split('/').pop();
-            await minioClient.removeObject(bucketName, oldThumbnailName);
+            throw new Error('Video tidak ditemukan');
         }
 
         let videoUrl = video.detail.url_minio_video;
         let thumbnailUrl = video.detail.url_minio_thumbnail;
 
+        // Upload video baru jika ada file yang diupload
         if (file) {
             const fileName = Date.now().toString() + '-' + file.originalname;
             await minioClient.putObject(bucketName, fileName, file.buffer, file.size, { 'Content-Type': file.mimetype });
             videoUrl = `http://${process.env.MINIO_HOST}:${minioClient.port}/${bucketName}/${fileName}`;
         }
 
+        // Upload thumbnail baru jika ada
         if (thumbnail) {
             const thumbnailName = Date.now().toString() + '-' + thumbnail.originalname;
             await minioClient.putObject(bucketName, thumbnailName, thumbnail.buffer, thumbnail.size, { 'Content-Type': thumbnail.mimetype });
             thumbnailUrl = `http://${process.env.MINIO_HOST}:${minioClient.port}/${bucketName}/${thumbnailName}`;
         }
 
+        // Update data video di repository
         const updatedVideo = await videoRepository.updateVideo(id, {
-            ...videoData,
-            status,
-            url_minio_video: videoUrl,
-            url_minio_thumbnail: thumbnailUrl
-        });
+            name: videoData.name,
+            description: videoData.description,
+            name_publisher: videoData.name_publisher,
+            status: videoData.status
+        }, videoUrl, thumbnailUrl);
 
+        // Pastikan data yang diambil adalah data yang baru saja diupdate
         return {
-            id: video.id,
-            name: video.name,
-            description: video.detail.description,
-            url_minio_video: videoUrl,
-            url_minio_thumbnail: thumbnailUrl,
-            name_publisher: video.detail.name_publisher,
-            views: video.detail.views,
-            status: status,
-            createdAt: video.createdAt,
-            updatedAt: new Date()
+            id: updatedVideo.video.id,
+            name: updatedVideo.video.name, // Nama baru yang diupdate
+            description: updatedVideo.videoDetail.description,
+            url_minio_video: updatedVideo.videoDetail.url_minio_video,
+            url_minio_thumbnail: updatedVideo.videoDetail.url_minio_thumbnail,
+            name_publisher: updatedVideo.videoDetail.name_publisher,
+            views: updatedVideo.videoDetail.views,
+            status: updatedVideo.videoDetail.status,
+            createdAt: updatedVideo.video.createdAt,
+            updatedAt: updatedVideo.video.updatedAt
         };
     } catch (err) {
         console.error('Error updating video:', err);

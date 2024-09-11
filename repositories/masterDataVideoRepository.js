@@ -57,23 +57,37 @@ exports.getTotalVideos = async () => {
 exports.getVideoById = async (videoId) => {
     return await MasterDataVideo.findOne({
         where: { id: videoId },
-        include: 'detail'
+        include: [{
+            model: DetailVideo, 
+            as: 'detail',
+            attributes: ['description', 'url_minio_video', 'url_minio_thumbnail', 'name_publisher', 'views', 'status']
+        }],
+        attributes: ['id', 'name', 'createdAt', 'updatedAt']
     });
 };
 
 exports.updateVideo = async (id, videoData, videoUrl, thumbnailUrl) => {
-    const video = await DetailVideo.findOne({ where: { masterDataVideoId: id } });
-    if (!video) throw new Error('Video not found');
+    const video = await MasterDataVideo.findOne({ where: { id: id } });
+    if (!video) throw new Error('Video tidak ditemukan');
 
     await video.update({
-        ...videoData,
-        url_minio_video: videoUrl || video.url_minio_video,
-        url_minio_thumbnail: thumbnailUrl || video.url_minio_thumbnail
+        name: videoData.name || video.name,
+        updatedAt: new Date()
     });
 
-    return video;
-};
+    const videoDetail = await DetailVideo.findOne({ where: { masterDataVideoId: id } });
+    if (!videoDetail) throw new Error('Detail video tidak ditemukan');
 
+    await videoDetail.update({
+        description: videoData.description || videoDetail.description,
+        name_publisher: videoData.name_publisher || videoDetail.name_publisher,
+        url_minio_video: videoUrl || videoDetail.url_minio_video,
+        url_minio_thumbnail: thumbnailUrl || videoDetail.url_minio_thumbnail,
+        status: videoData.status || videoDetail.status
+    });
+
+    return { video, videoDetail };
+};
 
 exports.deleteVideo = async (id) => {
     const videoDetail = await DetailVideo.findOne({ where: { masterDataVideoId: id } });

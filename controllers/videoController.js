@@ -22,7 +22,7 @@ exports.uploadVideo = async (req, res) => {
 exports.getAllVideos = async (req, res) => {
     try {
         const page = parseInt(req.query.page) || 1;
-        const limit = 100;
+        const limit = 2;
 
         const videos = await videoService.getAllVideos(page, limit);
 
@@ -51,11 +51,13 @@ exports.updateVideo = async (req, res) => {
         const thumbnail = req.files?.thumbnail ? req.files.thumbnail[0] : null;
 
         const updatedVideo = await videoService.updateVideo(videoId, { name, description, name_publisher, status }, file, thumbnail);
+
         return res.status(200).json(updatedVideo);
     } catch (err) {
         return res.status(500).json({ error: err.message });
     }
 };
+
 
 exports.fetchVideos = async (req, res) => {
     try {

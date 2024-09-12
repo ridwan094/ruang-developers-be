@@ -89,6 +89,37 @@ exports.updateVideo = async (id, videoData, videoUrl, thumbnailUrl) => {
     return { video, videoDetail };
 };
 
+exports.filterVideos = async (video_name, offset, limit, sortBy, sortDirection) => {
+    return await MasterDataVideo.findAndCountAll({
+        where: {
+            name: {
+                [Op.like]: `%${video_name}%`
+            }
+        },
+        offset: offset,
+        limit: limit,
+        order: [[sortBy, sortDirection]],
+        include: [
+            {
+                model: DetailVideo,
+                as: 'detail',
+                attributes: ['name_publisher', 'url_minio_video', 'url_minio_thumbnail', 'description', 'views', 'status'],
+                required: false
+            }
+        ]
+    });
+};
+
+exports.countFilteredVideos = async (video_name) => {
+    return await MasterDataVideo.count({
+        where: {
+            name: {
+                [Op.like]: `%${video_name}%`
+            }
+        }
+    });
+};
+
 exports.deleteVideo = async (id) => {
     const videoDetail = await DetailVideo.findOne({ where: { masterDataVideoId: id } });
     if (!videoDetail) throw new Error('Video detail not found');

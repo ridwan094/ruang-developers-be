@@ -73,6 +73,20 @@ exports.fetchVideos = async (req, res) => {
     }
 };
 
+exports.filterVideos = async (req, res) => {
+    try {
+        const { video_name = "", pageStart = 1, sortBy = "createdAt", sortDirection = "desc" } = req.body;
+        const limit = 2;
+        const offset = (pageStart - 1) * limit;
+
+        const videos = await videoService.filterVideos(video_name, offset, limit, sortBy, sortDirection);
+        
+        res.status(200).json(videos);
+    } catch (err) {
+        res.status(500).json({ error: 'Failed to filter videos' });
+    }
+};
+
 exports.deleteVideo = async (req, res) => {
     try {
         const videoId = req.params.id;

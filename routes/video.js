@@ -10,6 +10,7 @@ router.get('/videos', videoController.getAllVideos);
 router.get('/videos/:id', videoController.getVideoDetails);
 router.put('/videos/:id', upload.fields([{ name: 'file', maxCount: 1 }, { name: 'thumbnail', maxCount: 1 }]), videoController.updateVideo);
 router.post('/videos/fetch', videoController.fetchVideos);
+router.post('/videos/filter', videoController.filterVideos);
 router.delete('/videos/:id', videoController.deleteVideo);
 
 module.exports = router;

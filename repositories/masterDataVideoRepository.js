@@ -135,3 +135,19 @@ exports.deleteVideo = async (id) => {
 exports.incrementViews = async (videoId) => {
     await DetailVideo.increment('views', { where: { id: videoId } });
 };
+
+exports.getPublishedVideos = async () => {
+    return await MasterDataVideo.findAll({
+        include: [
+            {
+                model: DetailVideo,
+                as: 'detail',
+                where: {
+                    status: 'published'
+                },
+                required: true
+            }
+        ]
+    });
+};
+

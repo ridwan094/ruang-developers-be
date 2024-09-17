@@ -12,5 +12,6 @@ router.put('/videos/:id', upload.fields([{ name: 'file', maxCount: 1 }, { name: 
 router.post('/videos/fetch', videoController.fetchVideos);
 router.post('/videos/filter', videoController.filterVideos);
 router.delete('/videos/:id', videoController.deleteVideo);
+router.get('/videos/published', videoController.getPublishedVideos);
 
 module.exports = router;

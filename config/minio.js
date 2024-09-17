@@ -2,7 +2,7 @@ const Minio = require('minio');
 require('dotenv').config();
 
 const minioClient = new Minio.Client({
-    endPoint: '10.233.44.28',
+    endPoint: '10.233.44.35',
     port: 9000,
     useSSL: false,
     accessKey: process.env.MINIO_ROOT_USER,

@@ -96,3 +96,18 @@ exports.deleteVideo = async (req, res) => {
         return res.status(500).json({ error: err.message });
     }
 };
+
+exports.getPublishedVideos = async (req, res) => {
+    try {
+        const videos = await videoService.getPublishedVideos();
+
+        if (!videos || videos.length === 0) {
+            return res.status(404).json({ error: 'No published videos found' });
+        }
+
+        res.status(200).json(videos);
+    } catch (err) {
+        console.error("Error in getPublishedVideos controller:", err);
+        res.status(500).json({ error: err.message });
+    }
+};

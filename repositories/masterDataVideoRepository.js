@@ -136,14 +136,18 @@ exports.incrementViews = async (videoId) => {
     await DetailVideo.increment('views', { where: { id: videoId } });
 };
 
-exports.getPublishedVideos = async () => {
-    return await MasterDataVideo.findAll({
+exports.filterVideosByStatus = async (status, offset, limit, sortBy, sortDirection) => {
+    return await MasterDataVideo.findAndCountAll({
+        offset: offset,
+        limit: limit,
+        order: [[sortBy, sortDirection]],
         include: [
             {
                 model: DetailVideo,
                 as: 'detail',
+                attributes: ['name_publisher', 'url_minio_video', 'url_minio_thumbnail', 'description', 'views', 'status'],
                 where: {
-                    status: 'published'
+                    status: status
                 },
                 required: true
             }

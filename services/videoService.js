@@ -233,6 +233,34 @@ exports.filterVideos = async (video_name, offset, limit, sortBy, sortDirection) 
     }
 };
 
+exports.filterVideosByStatus = async (status, offset, limit, sortBy, sortDirection) => {
+    try {
+        const result = await videoRepository.filterVideosByStatus(status, offset, limit, sortBy, sortDirection);
+
+        // Kita bisa modifikasi response jika dibutuhkan
+        const videos = result.rows.map(video => ({
+            id: video.id,
+            name: video.name,
+            name_publisher: video.detail.name_publisher,
+            url_minio_video: video.detail.url_minio_video,
+            url_minio_thumbnail: video.detail.url_minio_thumbnail,
+            description: video.detail.description,
+            views: video.detail.views,
+            status: video.detail.status,
+            createdAt: video.createdAt,
+            updatedAt: video.updatedAt
+        }));
+
+        return {
+            count: result.count,
+            rows: videos
+        };
+    } catch (err) {
+        console.error('Error in videoService.filterVideosByStatus:', err);
+        throw err;
+    }
+};
+
 exports.deleteVideo = async (videoId) => {
     try {
         const video = await videoRepository.getVideoById(videoId);
@@ -271,32 +299,5 @@ exports.deleteVideo = async (videoId) => {
     } catch (err) {
         console.error('Error deleting video:', err);
         throw new Error(err.message);
-    }
-};
-
-exports.getPublishedVideos = async () => {
-    try {
-        const videos = await videoRepository.getPublishedVideos();
-        console.log("Videos fetched from repository:", videos);
-
-        if (!videos || videos.length === 0) {
-            throw new Error('No published videos found');
-        }
-
-        return videos.map(video => ({
-            id: video.id,
-            name: video.name,
-            description: video.detail.description,
-            url_minio_video: video.detail.url_minio_video,
-            url_minio_thumbnail: video.detail.url_minio_thumbnail,
-            name_publisher: video.detail.name_publisher,
-            views: video.detail.views,
-            status: video.detail.status,
-            createdAt: video.createdAt,
-            updatedAt: video.updatedAt
-        }));
-    } catch (error) {
-        console.error("Error in getPublishedVideos service:", error);
-        throw error;
     }
 };

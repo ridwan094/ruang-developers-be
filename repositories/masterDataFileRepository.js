@@ -1,4 +1,4 @@
-const { Op } = require('sequelize');
+const { Op, where } = require('sequelize');
 const { MasterDataFile } = require('../models');
 
 exports.createFile = async (fileData) => {
@@ -38,5 +38,14 @@ exports.deleteFile = async (id) => {
     await MasterDataFile.destroy({ where: { id } });
 
     return file;
+};
+
+exports.getFilesByStatus = async (status) => {
+    return await MasterDataFile.findAll({
+        where: {
+            status: status
+        },
+        order: [['createdAt', 'DESC']]
+    });
 };
 

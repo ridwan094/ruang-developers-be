@@ -77,6 +77,10 @@ exports.downloadFileById = async (req, res) => {
             return res.status(404).json({ error: 'File tidak ditemukan' });
         }
 
+        if (file.status === 'inactive') {
+            return res.status(403).json({ message: 'File tidak aktif dan tidak bisa diunduh.' });
+        }
+
         const fileNameInMinio = decodeURIComponent(file.url_minio_files.split('/').pop());
 
         const sanitizedFileName = fileNameInMinio.replace(/^\d+-/, '');
@@ -104,3 +108,18 @@ exports.downloadFileById = async (req, res) => {
         res.status(500).json({ error: err.message });
     }
 };
+
+exports.getFilesByStatus = async (req, res) => {
+    try {
+        const { status, pageStart, sortBy, sortDirection } = req.body;
+        const result = await fileService.getFilesByStatus(status, pageStart, sortBy, sortDirection);
+        res.status(200).json(result);
+    } catch (err) {
+        console.error('Kesalahan saat mendapatkan file:', err);
+        res.status(500).json({ error: err.message });
+    }
+};
+
+
+
+

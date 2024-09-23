@@ -1,5 +1,6 @@
 const fileRepository = require('../repositories/masterDataFileRepository');
 const minioClient = require('../config/minio');
+const { MasterDataFile } = require('../models');
 
 exports.uploadFile = async (fileData, file) => {
     const bucketName = 'files';
@@ -119,5 +120,31 @@ exports.getFileStream = async (fileUrl) => {
     const bucketName = 'files';
     const fileName = decodeURIComponent(fileUrl.split('/').pop());
     return minioClient.getObject(bucketName, fileName);
+};
+
+exports.getFilesByStatus = async (status, pageStart = 1, sortBy = 'createdAt', sortDirection = 'desc') => {
+    const pageSize = 10; // Sesuaikan dengan kebutuhan Anda
+    const offset = (pageStart - 1) * pageSize;
+
+    const files = await MasterDataFile.findAndCountAll({
+        where: { status },
+        limit: pageSize,
+        offset: offset,
+        order: [[sortBy, sortDirection.toUpperCase()]]
+    });
+
+    const totalDataServer = files.count;
+    const totalPageServer = Math.ceil(totalDataServer / pageSize);
+
+    return {
+        data: files.rows,
+        metadata: {
+            pageInfo: {
+                currentPage: pageStart,
+                totalDataServer: totalDataServer,
+                totalPageServer: totalPageServer
+            }
+        }
+    };
 };
 

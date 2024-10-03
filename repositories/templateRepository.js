@@ -19,6 +19,10 @@ exports.findTemplateById = async (id) => {
     return await Template.findByPk(id);
 };
 
+exports.findTemplateByIdTemplate = async (id_template) => {
+    return await Template.findOne({ where: { id_template } });
+};
+
 exports.updateTemplate = async (id, updateData) => {
     let template = await Template.findByPk(id);
     if (!template) throw new Error('Template not found');

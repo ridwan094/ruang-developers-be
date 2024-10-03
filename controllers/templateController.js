@@ -31,13 +31,14 @@ exports.getAllTemplates = async (req, res) => {
 
 exports.getTemplateDetails = async (req, res) => {
     try {
-        const template = await templateService.getTemplateDetails(req.params.id);
-        if (!template) return res.status(404).json({ error: 'Template not found' });
-        res.json(template);
+        const { id } = req.params;
+        const template = await templateService.getTemplateByGenericId(id);
+        res.status(200).json(template);
     } catch (err) {
         res.status(500).json({ error: err.message });
     }
 };
+
 
 exports.updateTemplate = async (req, res) => {
     try {
@@ -47,7 +48,7 @@ exports.updateTemplate = async (req, res) => {
         const thumbnails = req.files['thumbnails'] || [];
 
         const updatedTemplate = await templateService.updateTemplate(id, { template_name, publisher, id_template }, file, thumbnails);
-        // Membuat response baru dengan urutan kunci yang diinginkan
+
         const response = {
             id: updatedTemplate.id,
             template_name: updatedTemplate.template_name,

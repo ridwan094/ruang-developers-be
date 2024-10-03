@@ -35,7 +35,6 @@ exports.createTemplate = async (templateData, file, thumbnails) => {
     };
 };
 
-
 exports.getAllTemplates = async (page, limit) => {
     const offset = (page - 1) * limit;
 
@@ -63,9 +62,14 @@ exports.getAllTemplates = async (page, limit) => {
     };
 };
 
-exports.getTemplateDetails = async (id) => {
-    const template = await templateRepository.findTemplateById(id);
+exports.getTemplateByGenericId = async (genericId) => {
+    let template = await templateRepository.findTemplateById(genericId);
+    if (!template) {
+        template = await templateRepository.findTemplateByIdTemplate(genericId);
+    }
+
     if (!template) throw new Error('Template not found');
+
     return {
         id: template.id,
         template_name: template.template_name,
@@ -77,6 +81,8 @@ exports.getTemplateDetails = async (id) => {
         updatedAt: template.updatedAt
     };
 };
+
+
 
 exports.updateTemplate = async (id, updateData, newFile, newThumbnails) => {
     const bucketName = 'templates';

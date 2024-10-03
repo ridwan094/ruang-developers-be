@@ -1,7 +1,10 @@
 const { Template } = require('../models');
 
 exports.createTemplate = async (templateData) => {
-    return await Template.create(templateData);
+    return await Template.create({
+        ...templateData,
+        url_minio_thumbnail: templateData.url_minio_thumbnail
+    });
 };
 
 exports.getAllTemplates = async (offset, limit) => {
@@ -21,13 +24,12 @@ exports.updateTemplate = async (id, updateData) => {
     if (!template) throw new Error('Template not found');
 
     await template.update(updateData);
+
     return template;
 };
 
 exports.deleteTemplate = async (id) => {
     const template = await Template.findByPk(id);
-    if (!template) {
-        throw new Error('Template not found');
-    }
+    if (!template) throw new Error('Template not found');
     await template.destroy();
 };

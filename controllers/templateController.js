@@ -1,14 +1,16 @@
-const templateService = require('../services/templateService');
 const multer = require('multer');
 const upload = multer({ storage: multer.memoryStorage() });
+const templateService = require('../services/templateService');
 
 exports.createTemplate = async (req, res) => {
     try {
         const { template_name, publisher, id_template } = req.body;
-        const file = req.file;
-        if (!file) return res.status(400).json({ error: 'File is required' });
+        const file = req.files['file'] ? req.files['file'][0] : null;
+        const thumbnails = req.files['thumbnails'] || [];
 
-        const template = await templateService.createTemplate({ template_name, publisher, id_template }, file);
+        if (!file) return res.status(400).json({ error: 'Main file is required' });
+
+        const template = await templateService.createTemplate({ template_name, publisher, id_template }, file, thumbnails);
         res.status(201).json(template);
     } catch (err) {
         res.status(500).json({ error: err.message });
@@ -21,7 +23,6 @@ exports.getAllTemplates = async (req, res) => {
         const limit = parseInt(req.query.limit) || 10;
 
         const templates = await templateService.getAllTemplates(page, limit);
-
         res.status(200).json(templates);
     } catch (err) {
         res.status(500).json({ error: 'Failed to fetch templates' });
@@ -42,11 +43,21 @@ exports.updateTemplate = async (req, res) => {
     try {
         const { id } = req.params;
         const { template_name, publisher, id_template } = req.body;
-        const newFile = req.file;
+        const file = req.files['file'] ? req.files['file'][0] : null;
+        const thumbnails = req.files['thumbnails'] || [];
 
-        const updatedTemplate = await templateService.updateTemplate(id, { template_name, publisher, id_template }, newFile);
+        const updatedTemplate = await templateService.updateTemplate(id, { template_name, publisher, id_template }, file, thumbnails);
+        // Membuat response baru dengan urutan kunci yang diinginkan
+        const response = {
+            id: updatedTemplate.id,
+            template_name: updatedTemplate.template_name,
+            publisher: updatedTemplate.publisher,
+            id_template: updatedTemplate.id_template,
+            url_minio_preview: updatedTemplate.url_minio_preview,
+            url_minio_thumbnail: JSON.parse(updatedTemplate.url_minio_thumbnail) // Memastikan thumbnail dikembalikan sebagai array
+        };
 
-        res.status(200).json(updatedTemplate);
+        res.status(200).json(response);
     } catch (err) {
         res.status(500).json({ error: err.message });
     }
@@ -55,9 +66,9 @@ exports.updateTemplate = async (req, res) => {
 exports.deleteTemplate = async (req, res) => {
     try {
         const templateId = req.params.id;
-        await templateService.deleteTemplate(templateId);
-        return res.status(200).json({ message: 'Template successfully deleted' });
+        const result = await templateService.deleteTemplate(templateId);
+        res.status(200).json(result);
     } catch (err) {
-        return res.status(500).json({ error: err.message });
+        res.status(500).json({ error: err.message });
     }
 };

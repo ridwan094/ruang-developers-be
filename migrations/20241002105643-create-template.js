@@ -20,6 +20,10 @@ module.exports = {
         type: Sequelize.STRING,
         allowNull: false
       },
+      url_minio_thumbnail: {
+        type: Sequelize.TEXT,
+        allowNull: true
+      },
       id_template: {
         type: Sequelize.STRING,
         allowNull: false,

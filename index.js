@@ -4,6 +4,7 @@ const cors = require('cors');
 const sequelize = require('./config/database');
 const videoRoutes = require('./routes/video');
 const fileRoutes = require('./routes/file');
+const templateRoutes = require('./routes/template');
 require('dotenv').config();
 
 const app = express();
@@ -20,7 +21,8 @@ app.use(bodyParser.urlencoded({ extended: true }));
 
 app.use('/api', [
   videoRoutes,
-  fileRoutes
+  fileRoutes,
+  templateRoutes
 ]);
 
 sequelize.sync()

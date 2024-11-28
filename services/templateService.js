@@ -19,7 +19,8 @@ exports.createTemplate = async (templateData, file, thumbnails) => {
 
     const createdTemplate = await templateRepository.createTemplate({
         ...templateData,
-        url_minio_thumbnail: JSON.stringify(thumbnailUrls)  // Make sure this matches your database column and JSON structure
+        url_minio_thumbnail: JSON.stringify(thumbnailUrls),
+        description: templateData.description
     });
 
     // Reordering JSON output for response
@@ -29,7 +30,8 @@ exports.createTemplate = async (templateData, file, thumbnails) => {
         publisher: createdTemplate.publisher,
         id_template: createdTemplate.id_template,
         url_minio_preview: createdTemplate.url_minio_preview,
-        url_minio_thumbnails: thumbnailUrls, // This ensures thumbnails are correctly positioned in the response
+        url_minio_thumbnails: thumbnailUrls,
+        description: createdTemplate.description,
         createdAt: createdTemplate.createdAt,
         updatedAt: createdTemplate.updatedAt
     };
@@ -48,6 +50,7 @@ exports.getAllTemplates = async (page, limit) => {
             publisher: template.publisher,
             url_minio_preview: template.url_minio_preview,
             url_minio_thumbnails: JSON.parse(template.url_minio_thumbnail || '[]'),
+            description: template.description,
             id_template: template.id_template,
             createdAt: template.createdAt,
             updatedAt: template.updatedAt
@@ -76,6 +79,7 @@ exports.getTemplateByGenericId = async (genericId) => {
         publisher: template.publisher,
         url_minio_preview: template.url_minio_preview,
         url_minio_thumbnails: JSON.parse(template.url_minio_thumbnail || '[]'),
+        description: template.description,
         id_template: template.id_template,
         createdAt: template.createdAt,
         updatedAt: template.updatedAt
@@ -121,8 +125,9 @@ exports.updateTemplate = async (id, updateData, newFile, newThumbnails) => {
         template_name: updateData.template_name,
         publisher: updateData.publisher,
         url_minio_preview: newUrlMinioPreview,
-        url_minio_thumbnail: JSON.stringify(newThumbnailUrls), // Ensure to store it as a JSON string
-        id_template: updateData.id_template
+        url_minio_thumbnail: JSON.stringify(newThumbnailUrls),
+        description: updateData.description,
+        id_template: updateData.id_template,
     });
 
     return updatedTemplate;

@@ -24,6 +24,10 @@ module.exports = (sequelize, DataTypes) => {
         this.setDataValue('url_minio_thumbnail', JSON.stringify(value));
       }
     },
+    description: {
+      type: DataTypes.TEXT,
+      allowNull: true
+    },
     id_template: {
       type: DataTypes.STRING,
       allowNull: false,

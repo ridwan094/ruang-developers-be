@@ -4,7 +4,8 @@ const minioClient = require('../config/minio');
 exports.createTemplate = async (templateData) => {
     return await Template.create({
         ...templateData,
-        url_minio_thumbnail: templateData.url_minio_thumbnail
+        url_minio_thumbnail: templateData.url_minio_thumbnail,
+        description: templateData.description
     });
 };
 
@@ -32,6 +33,7 @@ exports.updateTemplate = async (id, updateData) => {
 
     return template;
 };
+
 
 exports.deleteTemplate = async (id) => {
     const template = await Template.findByPk(id);

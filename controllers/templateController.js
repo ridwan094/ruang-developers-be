@@ -4,13 +4,13 @@ const templateService = require('../services/templateService');
 
 exports.createTemplate = async (req, res) => {
     try {
-        const { template_name, publisher, id_template } = req.body;
+        const { template_name, publisher, id_template, description } = req.body;
         const file = req.files['file'] ? req.files['file'][0] : null;
         const thumbnails = req.files['thumbnails'] || [];
 
         if (!file) return res.status(400).json({ error: 'Main file is required' });
 
-        const template = await templateService.createTemplate({ template_name, publisher, id_template }, file, thumbnails);
+        const template = await templateService.createTemplate({ template_name, publisher, id_template, description }, file, thumbnails);
         res.status(201).json(template);
     } catch (err) {
         res.status(500).json({ error: err.message });
@@ -43,11 +43,11 @@ exports.getTemplateDetails = async (req, res) => {
 exports.updateTemplate = async (req, res) => {
     try {
         const { id } = req.params;
-        const { template_name, publisher, id_template } = req.body;
+        const { template_name, publisher, id_template, description } = req.body;
         const file = req.files['file'] ? req.files['file'][0] : null;
         const thumbnails = req.files['thumbnails'] || [];
 
-        const updatedTemplate = await templateService.updateTemplate(id, { template_name, publisher, id_template }, file, thumbnails);
+        const updatedTemplate = await templateService.updateTemplate(id, { template_name, publisher, id_template, description }, file, thumbnails);
 
         const response = {
             id: updatedTemplate.id,
@@ -55,7 +55,8 @@ exports.updateTemplate = async (req, res) => {
             publisher: updatedTemplate.publisher,
             id_template: updatedTemplate.id_template,
             url_minio_preview: updatedTemplate.url_minio_preview,
-            url_minio_thumbnail: JSON.parse(updatedTemplate.url_minio_thumbnail) // Memastikan thumbnail dikembalikan sebagai array
+            url_minio_thumbnail: JSON.parse(updatedTemplate.url_minio_thumbnail),
+            description: updatedTemplate.description
         };
 
         res.status(200).json(response);

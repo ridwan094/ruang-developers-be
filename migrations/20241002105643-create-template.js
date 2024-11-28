@@ -24,6 +24,10 @@ module.exports = {
         type: Sequelize.TEXT,
         allowNull: true
       },
+      description: {
+        type: Sequelize.TEXT,
+        allowNull: true
+      },
       id_template: {
         type: Sequelize.STRING,
         allowNull: false,

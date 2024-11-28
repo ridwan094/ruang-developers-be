@@ -1,4 +1,5 @@
 const { Template } = require('../models');
+const minioClient = require('../config/minio');
 
 exports.createTemplate = async (templateData) => {
     return await Template.create({
@@ -36,4 +37,22 @@ exports.deleteTemplate = async (id) => {
     const template = await Template.findByPk(id);
     if (!template) throw new Error('Template not found');
     await template.destroy();
+};
+
+exports.getTemplateById = async (id) => {
+    // Mencari template berdasarkan ID
+    const template = await Template.findByPk(id);
+    if (!template) throw new Error('Template not found');
+    
+    return template;
+};
+
+exports.getFileFromMinio = async (fileName) => {
+    // Mengambil file dari MinIO menggunakan nama file
+    try {
+        const stream = await minioClient.getObject('templates', fileName);
+        return stream;
+    } catch (err) {
+        throw new Error('Error downloading file from MinIO: ' + err.message);
+    }
 };

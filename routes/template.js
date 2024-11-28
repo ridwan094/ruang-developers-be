@@ -9,5 +9,6 @@ router.get('/templates', templateController.getAllTemplates);
 router.get('/templates/:id', templateController.getTemplateDetails);
 router.put('/templates/:id', upload.fields([{ name: 'file', maxCount: 1 }, { name: 'thumbnails', maxCount: 10 }]), templateController.updateTemplate);
 router.delete('/templates/:id', templateController.deleteTemplate);
+router.get('/templates/:id/download', templateController.downloadTemplate);
 
 module.exports = router;

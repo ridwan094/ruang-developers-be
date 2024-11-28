@@ -73,3 +73,19 @@ exports.deleteTemplate = async (req, res) => {
         res.status(500).json({ error: err.message });
     }
 };
+
+exports.downloadTemplate = async (req, res) => {
+    try {
+        const { id } = req.params;
+
+        // Mendapatkan stream file dari service
+        const { fileName, fileStream, mimeType } = await templateService.downloadTemplateFile(id);
+
+        // Mengirimkan file ke client
+        res.setHeader('Content-Disposition', `attachment; filename="${fileName}"`);
+        res.setHeader('Content-Type', mimeType);
+        fileStream.pipe(res); // Mengirimkan stream file sebagai response
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+};

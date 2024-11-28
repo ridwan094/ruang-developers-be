@@ -148,3 +148,24 @@ exports.deleteTemplate = async (id) => {
     await templateRepository.deleteTemplate(id);
     return { message: 'Template successfully deleted' };
 };
+
+exports.downloadTemplateFile = async (id) => {
+    // Mencari template berdasarkan ID
+    const template = await templateRepository.getTemplateById(id);
+
+    if (!template) throw new Error('Template not found');
+    
+    // Mengambil file dari MinIO berdasarkan URL preview template
+    const fileUrl = template.url_minio_preview;
+    const fileName = fileUrl.split('/').pop();
+
+    // Mengambil file dari MinIO
+    const fileStream = await templateRepository.getFileFromMinio(fileName);
+
+    // Mengembalikan file stream agar bisa didownload
+    return {
+        fileName,
+        fileStream,
+        mimeType: 'application/octet-stream' // Anda bisa menyesuaikan mimeType jika diperlukan
+    };
+};

@@ -1,9 +1,9 @@
 {
   "development": {
     "username": "root",
-    "password": null,
+    "password": "Admin@12345!",
     "database": "master_videos",
-    "host": "127.0.0.1",
+    "host": "mysql",
     "dialect": "mysql"
   },
   "test": {
